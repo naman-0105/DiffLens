@@ -5,6 +5,7 @@ import chalk from "chalk";
 import dotenv from "dotenv";
 import { getGitChanges } from "./git/gitDiff.js";
 import { analyzeChanges } from "./analyzer/changeAnalyzer.js";
+import { runStaticAnalysis } from "./static/eslintAnalyzer.js";
 
 dotenv.config();
 
@@ -41,6 +42,23 @@ async function runCli() {
           console.log(`${chalk.gray("•")} ${chalk.white(file.path)} [${chalk.blue(file.status)}] ${stats}${functions}`);
         }
         console.log();
+
+        const changedFilePaths = analysis.files.map((file) => file.path);
+        const staticResults = await runStaticAnalysis(changedFilePaths);
+
+        console.log(chalk.bold("Static Analysis (ESLint)"));
+        if (!staticResults.success) {
+          console.log(chalk.yellow(`Static analysis could not be completed: ${staticResults.error}\n`));
+        } else if (staticResults.findings.length === 0) {
+          console.log(chalk.green("No static analysis issues detected.\n"));
+        } else {
+          for (const finding of staticResults.findings) {
+            const tag = finding.severity === "error" ? chalk.red(`[${finding.severity.toUpperCase()}]`) : chalk.yellow(`[${finding.severity.toUpperCase()}]`);
+            console.log(`${tag} ${chalk.gray(finding.rule)} ${chalk.white(`${finding.file}:${finding.line}:${finding.column}`)}`);
+            console.log(`  ${chalk.gray("Message:")} ${finding.message}`);
+          }
+          console.log();
+        }
       } catch (error) {
         console.error(chalk.red(`Error: ${error.message}\n`));
         process.exit(1);
