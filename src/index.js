@@ -6,6 +6,7 @@ import dotenv from "dotenv";
 import { getGitChanges } from "./git/gitDiff.js";
 import { analyzeChanges } from "./analyzer/changeAnalyzer.js";
 import { runStaticAnalysis } from "./static/eslintAnalyzer.js";
+import { analyzeFileDependencies, isSupportedSourceFile } from "./dependency/dependencyAnalyzer.js";
 
 dotenv.config();
 
@@ -59,6 +60,24 @@ async function runCli() {
           }
           console.log();
         }
+
+        console.log(chalk.bold("Code Dependency Analysis"));
+        for (const file of analysis.files) {
+          if (!isSupportedSourceFile(file.path)) continue;
+          const deps = analyzeFileDependencies(file.path);
+          if (!deps) continue;
+
+          const localDeps = deps.imports.filter((i) => i.isLocal).map((i) => i.resolvedPath);
+          if (localDeps.length > 0) {
+            console.log(`${chalk.white(file.path)}`);
+            for (const dep of localDeps) {
+              console.log(`  ${chalk.gray("↳ depends on:")} ${chalk.cyan(dep)}`);
+            }
+          } else {
+            console.log(`${chalk.white(file.path)} ${chalk.gray("(no local dependencies)")}`);
+          }
+        }
+        console.log();
       } catch (error) {
         console.error(chalk.red(`Error: ${error.message}\n`));
         process.exit(1);
