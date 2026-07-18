@@ -6,7 +6,7 @@ import dotenv from "dotenv";
 import { getGitChanges } from "./git/gitDiff.js";
 import { analyzeChanges } from "./analyzer/changeAnalyzer.js";
 import { runStaticAnalysis } from "./static/eslintAnalyzer.js";
-import { analyzeFileDependencies, isSupportedSourceFile } from "./dependency/dependencyAnalyzer.js";
+import { buildRepositoryGraph } from "./dependency/repositoryGraph.js";
 
 dotenv.config();
 
@@ -61,21 +61,26 @@ async function runCli() {
           console.log();
         }
 
-        console.log(chalk.bold("Code Dependency Analysis"));
-        for (const file of analysis.files) {
-          if (!isSupportedSourceFile(file.path)) continue;
-          const deps = analyzeFileDependencies(file.path);
-          if (!deps) continue;
+        const repoGraph = buildRepositoryGraph();
+        const impactContext = repoGraph.getImpactedContext(changedFilePaths);
 
-          const localDeps = deps.imports.filter((i) => i.isLocal).map((i) => i.resolvedPath);
-          if (localDeps.length > 0) {
-            console.log(`${chalk.white(file.path)}`);
-            for (const dep of localDeps) {
-              console.log(`  ${chalk.gray("↳ depends on:")} ${chalk.cyan(dep)}`);
-            }
-          } else {
-            console.log(`${chalk.white(file.path)} ${chalk.gray("(no local dependencies)")}`);
+        console.log(chalk.bold("Repository Graph & Impact Analysis"));
+        if (impactContext.directDependencies.length > 0) {
+          console.log(chalk.white("Direct Dependencies:"));
+          for (const dep of impactContext.directDependencies) {
+            console.log(`  ${chalk.gray("→")} ${chalk.cyan(dep)}`);
           }
+        } else {
+          console.log(chalk.gray("Direct Dependencies: (none)"));
+        }
+
+        if (impactContext.directDependents.length > 0) {
+          console.log(chalk.white("Direct Dependents:"));
+          for (const dep of impactContext.directDependents) {
+            console.log(`  ${chalk.gray("←")} ${chalk.yellow(dep)}`);
+          }
+        } else {
+          console.log(chalk.gray("Direct Dependents: (none)"));
         }
         console.log();
       } catch (error) {
