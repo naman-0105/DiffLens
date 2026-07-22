@@ -7,6 +7,7 @@ import { getGitChanges } from "./git/gitDiff.js";
 import { analyzeChanges } from "./analyzer/changeAnalyzer.js";
 import { runStaticAnalysis } from "./static/eslintAnalyzer.js";
 import { buildRepositoryGraph } from "./dependency/repositoryGraph.js";
+import { buildFocusedContext, formatContextForPrompt } from "./context/contextBuilder.js";
 
 dotenv.config();
 
@@ -83,6 +84,17 @@ async function runCli() {
           console.log(chalk.gray("Direct Dependents: (none)"));
         }
         console.log();
+
+        const context = buildFocusedContext({
+          analysis,
+          staticResults,
+          repoGraph
+        });
+
+        console.log(chalk.bold("Focused LLM Context Built"));
+        console.log(`  ${chalk.gray("• Changed function snippets:")} ${chalk.white(context.metrics.changedSnippetsCount)}`);
+        console.log(`  ${chalk.gray("• Related dependency snippets:")} ${chalk.white(context.metrics.relatedSnippetsCount)}`);
+        console.log(`  ${chalk.gray("• Context size:")} ${chalk.white(`${context.metrics.approxContextCharacters} chars`)}\n`);
       } catch (error) {
         console.error(chalk.red(`Error: ${error.message}\n`));
         process.exit(1);
