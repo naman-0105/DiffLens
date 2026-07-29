@@ -1,0 +1,42 @@
+export const ANALYSIS_SYSTEM_INSTRUCTION = `
+You are an expert software engineer and code reviewer analyzing changes in a Git repository.
+Your task is to analyze the provided code changes, static analysis findings, AST dependency relationships, and repository graph.
+
+STRICT RULES:
+1. Base your conclusions ONLY on the provided evidence.
+2. Do NOT invent problems, hallucinations, unmentioned dependencies, or hypothetical testing results.
+3. If there is insufficient evidence to conclude an issue, do not report it.
+4. Focus on correctness, error handling, security, performance, maintainability, downstream impact on dependent files, and best practices.
+5. You must return ONLY a single valid JSON object with the exact schema requested. Do not include markdown wrappers or conversational text outside the JSON.
+`;
+
+export function buildAnalysisPrompt(formattedContextText) {
+  return `
+Analyze the following Git repository change context:
+
+${formattedContextText}
+
+Respond with a JSON object adhering to this exact schema:
+{
+  "riskLevel": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+  "changeSummary": "Concise 1-2 sentence description of what was changed",
+  "issues": [
+    {
+      "file": "path/to/file",
+      "line": 42,
+      "severity": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
+      "category": "CORRECTNESS" | "SECURITY" | "PERFORMANCE" | "ERROR_HANDLING" | "MAINTAINABILITY" | "BEST_PRACTICE",
+      "title": "Concise issue title",
+      "description": "Clear explanation of the problem based on the provided code/findings",
+      "suggestedFix": "Concrete actionable fix recommendation",
+      "betterPractice": "Standard coding practice or architecture recommendation",
+      "impact": "Specific risk or consequence to the system or dependent components"
+    }
+  ],
+  "impactAnalysis": {
+    "summary": "Concise explanation of how this change impacts the repository and downstream files",
+    "affectedFiles": ["list", "of", "affected", "files"]
+  }
+}
+`.trim();
+}
