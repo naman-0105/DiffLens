@@ -150,6 +150,19 @@ async function runCli() {
         console.log(chalk.bold("Suggested Commit"));
         console.log(chalk.gray("────────────────────────────────────"));
         console.log(chalk.green(llmResult.suggestedCommitMessage) + "\n");
+
+        if (llmResult.pullRequest) {
+          console.log(chalk.bold("Pull Request"));
+          console.log(chalk.gray("────────────────────────────────────"));
+          console.log(`${chalk.bold("Title:")} ${llmResult.pullRequest.title}\n`);
+          console.log(`${chalk.bold("Summary:")}\n${llmResult.pullRequest.summary}\n`);
+          console.log(chalk.bold("Changes:"));
+          for (const chg of llmResult.pullRequest.changes) {
+            console.log(`${chalk.gray("•")} ${chg}`);
+          }
+          console.log(`\n${chalk.bold("Impact:")}\n${llmResult.pullRequest.impact}\n`);
+          console.log(`${chalk.bold("Testing:")}\n${llmResult.pullRequest.testing}\n`);
+        }
       } catch (error) {
         console.error(chalk.red(`Error: ${error.message}\n`));
         process.exit(1);

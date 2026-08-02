@@ -118,12 +118,31 @@ export async function analyzeWithGemini(formattedContextText, options = {}) {
     ? parsed.suggestedCommitMessage.trim()
     : "chore: update repository files";
 
+  const pullRequest = {
+    title: typeof parsed.pullRequest?.title === "string" && parsed.pullRequest.title.trim().length > 0
+      ? parsed.pullRequest.title.trim()
+      : changeSummary,
+    summary: typeof parsed.pullRequest?.summary === "string" && parsed.pullRequest.summary.trim().length > 0
+      ? parsed.pullRequest.summary.trim()
+      : changeSummary,
+    changes: Array.isArray(parsed.pullRequest?.changes) && parsed.pullRequest.changes.length > 0
+      ? parsed.pullRequest.changes
+      : [changeSummary],
+    impact: typeof parsed.pullRequest?.impact === "string" && parsed.pullRequest.impact.trim().length > 0
+      ? parsed.pullRequest.impact.trim()
+      : impactAnalysis.summary,
+    testing: typeof parsed.pullRequest?.testing === "string" && parsed.pullRequest.testing.trim().length > 0
+      ? parsed.pullRequest.testing.trim()
+      : "Static analysis and repository structure verification completed."
+  };
+
   return {
     riskLevel,
     issues,
     impactAnalysis,
     changeSummary,
     suggestedCommitMessage,
+    pullRequest,
     rawResponse: parsed
   };
 }
