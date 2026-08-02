@@ -114,12 +114,16 @@ export async function analyzeWithGemini(formattedContextText, options = {}) {
   };
 
   const changeSummary = parsed.changeSummary || "Repository changes analyzed.";
+  const suggestedCommitMessage = typeof parsed.suggestedCommitMessage === "string" && parsed.suggestedCommitMessage.trim().length > 0
+    ? parsed.suggestedCommitMessage.trim()
+    : "chore: update repository files";
 
   return {
     riskLevel,
     issues,
     impactAnalysis,
     changeSummary,
+    suggestedCommitMessage,
     rawResponse: parsed
   };
 }

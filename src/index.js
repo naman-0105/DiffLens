@@ -146,6 +146,10 @@ async function runCli() {
           }
         }
         console.log();
+
+        console.log(chalk.bold("Suggested Commit"));
+        console.log(chalk.gray("────────────────────────────────────"));
+        console.log(chalk.green(llmResult.suggestedCommitMessage) + "\n");
       } catch (error) {
         console.error(chalk.red(`Error: ${error.message}\n`));
         process.exit(1);

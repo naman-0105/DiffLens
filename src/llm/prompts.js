@@ -7,7 +7,14 @@ STRICT RULES:
 2. Do NOT invent problems, hallucinations, unmentioned dependencies, or hypothetical testing results.
 3. If there is insufficient evidence to conclude an issue, do not report it.
 4. Focus on correctness, error handling, security, performance, maintainability, downstream impact on dependent files, and best practices.
-5. You must return ONLY a single valid JSON object with the exact schema requested. Do not include markdown wrappers or conversational text outside the JSON.
+5. Generate a concise, conventional Git commit message (e.g., "feat: ...", "fix: ...", "refactor: ...", "chore: ...") that accurately summarizes only the actual changes made.
+6. For each detected issue, provide:
+   - Specific file and line number
+   - Clear problem description
+   - Concrete suggested fix
+   - Better coding practice / architectural pattern
+   - Direct impact or consequence on the system / downstream callers
+7. You must return ONLY a single valid JSON object with the exact schema requested. Do not include markdown wrappers or conversational text outside the JSON.
 `;
 
 export function buildAnalysisPrompt(formattedContextText) {
@@ -20,6 +27,7 @@ Respond with a JSON object adhering to this exact schema:
 {
   "riskLevel": "LOW" | "MEDIUM" | "HIGH" | "CRITICAL",
   "changeSummary": "Concise 1-2 sentence description of what was changed",
+  "suggestedCommitMessage": "Single-line conventional commit message (e.g. 'fix: handle failed payment refunds')",
   "issues": [
     {
       "file": "path/to/file",
