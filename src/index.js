@@ -1,5 +1,9 @@
 #!/usr/bin/env node
 
+import fs from "fs";
+import path from "path";
+import os from "os";
+import { fileURLToPath } from "url";
 import { Command } from "commander";
 import chalk from "chalk";
 import dotenv from "dotenv";
@@ -21,7 +25,25 @@ import {
   formatPullRequest
 } from "./output/formatter.js";
 
-dotenv.config();
+function loadEnvironment() {
+  const currentDirEnv = path.resolve(process.cwd(), ".env");
+  const toolDirEnv = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../.env");
+  const homeDifflensEnv = path.resolve(os.homedir(), ".difflens/.env");
+  const homeEnv = path.resolve(os.homedir(), ".env");
+
+  const candidatePaths = [currentDirEnv, toolDirEnv, homeDifflensEnv, homeEnv];
+
+  for (const envPath of candidatePaths) {
+    if (fs.existsSync(envPath)) {
+      dotenv.config({ path: envPath });
+      if (process.env.GEMINI_API_KEY && process.env.GEMINI_API_KEY.trim().length > 0) {
+        break;
+      }
+    }
+  }
+}
+
+loadEnvironment();
 
 async function runCli() {
   const program = new Command();

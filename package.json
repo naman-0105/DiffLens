@@ -13,6 +13,8 @@
   "dependencies": {
     "@babel/parser": "^7.29.9",
     "@google/genai": "^2.27.0",
+    "@typescript-eslint/eslint-plugin": "^8.71.0",
+    "@typescript-eslint/parser": "^8.71.0",
     "chalk": "^5.3.0",
     "commander": "^12.1.0",
     "dotenv": "^16.4.5",

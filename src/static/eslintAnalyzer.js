@@ -1,5 +1,6 @@
 import { ESLint } from "eslint";
 import globals from "globals";
+import tsParser from "@typescript-eslint/parser";
 import fs from "fs";
 import path from "path";
 
@@ -28,7 +29,7 @@ export async function runStaticAnalysis(files, cwd = process.cwd()) {
       overrideConfigFile: true,
       overrideConfig: [
         {
-          files: ["**/*.js", "**/*.mjs", "**/*.cjs", "**/*.jsx", "**/*.ts", "**/*.tsx"],
+          files: ["**/*.js", "**/*.mjs", "**/*.cjs"],
           languageOptions: {
             ecmaVersion: "latest",
             sourceType: "module",
@@ -43,6 +44,27 @@ export async function runStaticAnalysis(files, cwd = process.cwd()) {
           rules: {
             "no-undef": "error",
             "no-unused-vars": "warn",
+            "no-unreachable": "error",
+            "no-constant-condition": "warn",
+            "no-dupe-keys": "error",
+            "no-duplicate-case": "error"
+          }
+        },
+        {
+          files: ["**/*.ts", "**/*.tsx", "**/*.jsx"],
+          languageOptions: {
+            parser: tsParser,
+            parserOptions: {
+              ecmaVersion: "latest",
+              sourceType: "module",
+              ecmaFeatures: { jsx: true }
+            },
+            globals: {
+              ...globals.node,
+              ...globals.browser
+            }
+          },
+          rules: {
             "no-unreachable": "error",
             "no-constant-condition": "warn",
             "no-dupe-keys": "error",
